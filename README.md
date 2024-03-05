@@ -1,15 +1,15 @@
 # FramePicker
 
-`FramePicker` 是一个用于处理网络帧数据的 Rust 库。
+`FramePicker` is a Rust library for handling network frame data, designed to solve problems similar to TCP/UART packet sticking.
 
-## 功能
+## Features
 
-- 提供了一个 `FramePicker` 结构体，用于存储和处理网络帧数据。
-- 提供了一个 `FrameMeta` trait，用于定义网络帧的元数据。
+- Provides a `FramePicker` structure for storing and processing network frame data.
+- Provides a `FrameMeta` trait for defining the metadata of network frames.
 
-## 使用
+## Usage
 
-首先，定义一个实现了 `FrameMeta` trait 的类型。然后，创建一个 `FramePicker` 实例，并使用它来处理网络帧数据。
+First, define a type that implements the `FrameMeta` trait. Then, create a `FramePicker` instance and use it to process network frame data.
 
 ```rust
 let mut picker = FramePicker::<500, Iap2FrameMeta>::new();
@@ -19,14 +19,14 @@ assert!(picker.contain_frame());
 assert!(picker.frame_complete());
 ```
 
-## 测试
+## Testing
 
-使用 `cargo test` 命令来执行测试用例。
+Use the `cargo test` command to run test cases.
 
-## 贡献
+## Contribution
 
-欢迎提交 PR 和 issue。
+PRs and issues are welcome.
 
-## 许可证
+## License
 
 [MIT](LICENSE)
