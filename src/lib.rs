@@ -1,3 +1,5 @@
+#![no_std]
+
 pub mod frame_meta;
 pub mod iap2_frame_meta;
 use core::marker::PhantomData;
