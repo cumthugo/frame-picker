@@ -1,5 +1,5 @@
-mod frame_meta;
-mod iap2_frame_meta;
+pub mod frame_meta;
+pub mod iap2_frame_meta;
 use core::marker::PhantomData;
 
 use frame_meta::FrameMeta;
