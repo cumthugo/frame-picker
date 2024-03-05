@@ -84,8 +84,8 @@ impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
         if self.frame_complete() {
             let total_len = M::frame_totol_len(self.storage[..self.read_at].as_ref());
             self.storage.copy_within(total_len..self.read_at, 0);
-            self.align_buffer_with_header();
             self.read_at -= total_len;
+            self.align_buffer_with_header();
             Ok(())
         } else {
             Err(Empty)
