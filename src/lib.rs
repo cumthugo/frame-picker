@@ -1,26 +1,34 @@
+// We're not using the standard library
 #![no_std]
 
+/// Frame metadata module
 pub mod frame_meta;
+/// Iap2 frame metadata module
 pub mod iap2_frame_meta;
 use core::marker::PhantomData;
 
 use frame_meta::FrameMeta;
 
+/// An error type indicating that there are no frames available
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Empty;
 
+/// An error type indicating that the storage is full
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Full;
 
+/// A struct for storing and handling network frame data
 #[derive(Debug)]
 pub struct FramePicker<const N: usize, M: FrameMeta> {
     storage: [u8; N],
     read_at: usize,
+    /// The number of bytes dropped
     pub dropped : usize,
     _marker : PhantomData<M>,
 }
 
 impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
+    /// Creates a new FramePicker
     pub fn new() -> Self {
         Self {
             storage: [0; N],
@@ -30,6 +38,8 @@ impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
         }
     }
 
+    /// Feeds data into the FramePicker
+    /// Returns a Full error if the storage is full
     pub fn feed_data(&mut self, data: &[u8]) -> Result<usize, Full> {
         if self.read_at + data.len() > N {
             return Err(Full);
@@ -42,6 +52,7 @@ impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
         Ok(len)
     }
 
+    /// Aligns the buffer with the header
     fn align_buffer_with_header(&mut self) {
         let mut search_at: usize = 0;
         loop {
@@ -61,6 +72,7 @@ impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
         }
     }
 
+    /// Checks if the FramePicker contains a frame
     pub fn contain_frame(&self) -> bool {
         if self.read_at < M::frame_header_len() {
             return false;
@@ -68,6 +80,7 @@ impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
         M::frame_match(self.storage[..self.read_at].as_ref())
     }
 
+    /// Checks if the frame is complete
     pub fn frame_complete(&self) -> bool {
         if self.read_at < M::frame_header_len() {
             return false;
@@ -76,6 +89,7 @@ impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
         total_len > 0 && total_len <= self.read_at
     }
 
+    /// Acquires a frame
     pub fn acquire_frame(&mut self) -> Result<&[u8], Empty> {
         if self.frame_complete() {
             let total_len = M::frame_totol_len(self.storage[..self.read_at].as_ref());
@@ -86,6 +100,7 @@ impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
         }
     }
 
+    /// Releases a frame
     pub fn release_frame(&mut self) -> Result<(), Empty> {
         if self.frame_complete() {
             let total_len = M::frame_totol_len(self.storage[..self.read_at].as_ref());
@@ -98,6 +113,7 @@ impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
         }
     }
 
+    /// Dequeues a frame with a function
     pub fn dequeue_frame_with<F,R>(&mut self, f: F) -> Result<R, Empty>
     where
         F: FnOnce(&[u8]) -> R,
