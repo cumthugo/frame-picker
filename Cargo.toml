@@ -3,11 +3,9 @@ name = "frame-picker"
 version = "0.1.0"
 authors = ["Hugo <cumt_zhangyong@163.com>"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "FramePicker is a Rust library for handling network frame data, designed to solve problems similar to TCP/UART packet sticking."
+license = "MIT"
+license-file = "LICENSE"
+repository = "https://github.com/cumthugo/frame-picker.git"
 
 [dependencies]
-
-[package.metadata]
-license = "MIT"
-repository = "https://github.com/cumthugo/frame-picker.git"
