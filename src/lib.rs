@@ -43,17 +43,21 @@ impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
     }
 
     fn align_buffer_with_header(&mut self) {
+        let mut search_at: usize = 0;
         loop {
-            if self.read_at < M::frame_header_len() {
+            if self.read_at - search_at < M::frame_header_len() {
                 break;
             }
-            if M::frame_match(&self.storage[..self.read_at]) {
+            if M::frame_match(&self.storage[search_at..self.read_at]) {
                 break;
             } else {
-                self.dropped += 1;
-                self.storage.copy_within(1..self.read_at, 0);
-                self.read_at -= 1;
+                search_at += 1;
             }
+        }
+        if search_at > 0 {
+            self.dropped += search_at;
+            self.storage.copy_within(search_at..self.read_at, 0);
+            self.read_at -= search_at;
         }
     }
 
@@ -160,7 +164,7 @@ mod tests {
         assert_eq!(picker.feed_data(&normal_data[..]), Ok(12));
         assert_eq!(picker.dropped, 2);
         assert_eq!(picker.read_at, 10);
-        assert!(picker.contain_frame());
+        assert_eq!(picker.contain_frame(), true);
         assert_eq!(picker.frame_complete(), true);
 
         assert_eq!(picker.feed_data(&normal_data[..]), Ok(12));
@@ -186,6 +190,21 @@ mod tests {
 
         assert_eq!(picker.feed_data(&[0x00, 0x0a, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a]), Ok(8));
         assert_eq!(picker.frame_complete(), true);
+    }
+
+    #[test]
+    fn test_header_not_complete() {
+        let mut picker = picker();
+        let data1 = [0x32,0x34,0x42,0x33,0x52,0x42, 0x32, 0x31, 0x93,0x32,0xff];
+        let data2 = [0x5a,0x00,0x0a,0x05,0x06,0x07,0x08,0x09,0x0a];
+        assert_eq!(picker.feed_data(&data1[..]), Ok(11));
+        assert_eq!(picker.dropped, 6);
+        assert_eq!(picker.contain_frame(), false);
+
+        assert_eq!(picker.feed_data(&data2[..]), Ok(9));
+        assert_eq!(picker.dropped, 10);
+        assert_eq!(picker.contain_frame(), true);
+
     }
 
 }
