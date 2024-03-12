@@ -52,6 +52,11 @@ impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
         Ok(len)
     }
 
+    // If the buffer is less than half empty, we can feed new data
+    pub fn can_feed_new_data(&self) -> bool {
+        self.read_at <= N/2
+    }
+
     /// Aligns the buffer with the header
     fn align_buffer_with_header(&mut self) {
         let mut search_at: usize = 0;
