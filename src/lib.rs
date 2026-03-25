@@ -123,13 +123,10 @@ impl<const N: usize, M: FrameMeta> FramePicker<N, M> {
     where
         F: FnOnce(&[u8]) -> R,
     {
-        if let Ok(frame) = self.acquire_frame() {
-            let result = f(frame);
-            self.release_frame().unwrap();
-            Ok(result)
-        } else {
-            Err(Empty)
-        }
+        let frame = self.acquire_frame()?;
+        let result = f(frame);
+        self.release_frame()?;
+        Ok(result)
     }
 }
 #[cfg(test)]
@@ -226,6 +223,12 @@ mod tests {
         assert_eq!(picker.dropped, 10);
         assert_eq!(picker.contain_frame(), true);
 
+    }
+
+    #[test]
+    fn test_dequeue_frame_with_when_empty() {
+        let mut picker = picker();
+        assert_eq!(picker.dequeue_frame_with(|_| 1), Err(Empty));
     }
 
 }
